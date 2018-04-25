@@ -35,7 +35,7 @@ If you do not have this directory, .platformio/platforms/ststm32 try,
 
 ## Setting Up
 
-This example is preconfigured to use it in EU868 region. If you want to use it in other region such as US915, AU915 or others you have to change region in platformio.ini
+This example is preconfigured to use it in EU868 region. If you want **to use it in other region such as US915, AU915 or others you have to change region in platformio.ini **
 
 Then in Comissioning.h file please enter your own DEVEUI, APPEUI, APPKEY to reach your application.
 
@@ -75,7 +75,7 @@ Now it starts and outputs debug information on UART,
     Move Detected INT1 src:0x48
     [Debug]: tempr: 35 Bat: 3988mv
     [Debug]: ACC X:FF00 Y:0000 Z:FF00
-    GpsGetLatestGpsPositionDouble ret = 0
+    GpsGetLatestGpsPositionDouble ret = 1
 
 ## Qemu
 I have made a simple qemu board emulation and its possible to start and run in qemu,
