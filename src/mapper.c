@@ -34,7 +34,6 @@
  */
 #define APP_TX_DUTYCYCLE_RND                        1000
 
-
 /*!
  * LoRaWAN confirmed messages
  */
@@ -204,12 +203,9 @@ void dump_hex2str(uint8_t *buf, uint8_t len) {
 	printf("\r\n");
 }
 
-uint8_t GPS_GETFAIL = FAIL;
-
 static void PrepareTxFrame(uint8_t port) {
 	double latitude, longitude, hdopGps = 0;
 	int16_t altitudeGps = 0xFFFF;
-	int8_t tempr = 25;
 	uint8_t ret;
 	uint16_t bat;
 
@@ -221,24 +217,26 @@ static void PrepareTxFrame(uint8_t port) {
 		altitudeGps = GpsGetLatestGpsAltitude(); // in m
 		hdopGps = GpsGetLatestGpsHorizontalDilution();
 		//printf("[Debug]: latitude: %f, longitude: %f , altitudeGps: %d \n", latitude, longitude, altitudeGps);
-		printf("GpsGetLatestGpsPositionDouble ret = %d\r\n", ret);
-		int32_t lat = latitude * 10000;
-		int32_t lon = longitude * 10000;
-		int16_t alt = altitudeGps * 100;
-		int8_t hdev = hdopGps * 10;
+		//printf("GpsGetLatestGpsPositionDouble ret = %d\r\n", ret);
+		uint32_t lat = ((latitude + 90) / 180.0) * 16777215;
+		uint32_t lon = ((longitude + 180) / 360.0) * 16777215;
+		uint16_t alt = altitudeGps;
+		uint8_t hdev = hdopGps * 10;
 		
 		if (ret == SUCCESS) {
 
-			AppData[0] = lat;
+			printf("Lat: %d Lon: %d, Alt: %d\r\n", (int)lat, (int)lon, alt);
+
+			AppData[0] = lat >> 16;
 			AppData[1] = lat >> 8;
-			AppData[2] = lat >> 16;
+			AppData[2] = lat;
 
-			AppData[3] = lon;
+			AppData[3] = lon >> 16;;
 			AppData[4] = lon >> 8;
-			AppData[5] = lon >> 16;
+			AppData[5] = lon;
 
-			AppData[6] = alt;
-			AppData[7] = alt >> 8;
+			AppData[6] = alt >> 8;
+			AppData[7] = alt;
 
 			AppData[8] = hdev;
 
@@ -315,10 +313,10 @@ static void PrepareTxFrame(uint8_t port) {
  *
  * \retval  [0: frame could be send, 1: error]
  */
-static bool SendFrame(void) {
+static int SendFrame(void) {
 	McpsReq_t mcpsReq;
 	LoRaMacTxInfo_t txInfo;
-
+	int err;
 	if (LoRaMacQueryTxPossible(AppDataSize, &txInfo) != LORAMAC_STATUS_OK) {
 		// Send empty frame in order to flush MAC commands
 		mcpsReq.Type = MCPS_UNCONFIRMED;
@@ -342,10 +340,8 @@ static bool SendFrame(void) {
 		}
 	}
 
-	if (LoRaMacMcpsRequest(&mcpsReq) == LORAMAC_STATUS_OK) {
-		return false;
-	}
-	return true;
+	err = LoRaMacMcpsRequest(&mcpsReq);
+	return err; // LORAMAC_STATUS_OK is zero.
 }
 
 /*!
@@ -710,7 +706,7 @@ int main(void) {
 
 			TimerInit(&Led2Timer, OnLed2TimerEvent);
 			TimerSetValue(&Led2Timer, 50);
-
+			TimerStart(&Led2Timer);
 			mibReq.Type = MIB_ADR;
 			mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
 			LoRaMacMibSetRequestConfirm(&mibReq);
@@ -816,13 +812,13 @@ int main(void) {
 		}
 		case DEVICE_STATE_SEND: {
 			if (NextTx == true) {
+				int err;
 				PrepareTxFrame(AppPort);
 
-				if (GPS_GETFAIL == SUCCESS) {
-					GPS_GETFAIL = FAIL;
-				} else {
-					NextTx = SendFrame();
-				}
+				err = SendFrame();
+				NextTx = err == LORAMAC_STATUS_OK;
+				printf("SendFrame: %d\r\n", err);
+				
 				AppPort++;
 				if (AppPort >= 5) {
 					AppPort = 2;
