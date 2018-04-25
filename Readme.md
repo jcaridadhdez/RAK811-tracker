@@ -35,7 +35,7 @@ If you do not have this directory, .platformio/platforms/ststm32 try,
 
 ## Setting Up
 
-This example is preconfigured to use it in EU868 region. If you want **to use it in other region such as US915, AU915 or others you have to change region in platformio.ini **
+This example is preconfigured to use it in EU868 region. If you want **to use it in other region such as US915, AU915 or others you have to change region in platformio.ini**
 
 Then in Comissioning.h file please enter your own DEVEUI, APPEUI, APPKEY to reach your application.
 
