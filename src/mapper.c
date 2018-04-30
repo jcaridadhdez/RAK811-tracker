@@ -210,8 +210,7 @@ static void PrepareTxFrame(uint8_t port) {
 	uint16_t bat;
 
 	switch (port) {
-	//https://mydevices.com/cayenne/docs/lora/#lora-cayenne-low-power-payload
-	//cayenne LPP GPS
+		
 	case 2: {
 		ret = GpsGetLatestGpsPositionDouble(&latitude, &longitude);
 		altitudeGps = GpsGetLatestGpsAltitude(); // in m

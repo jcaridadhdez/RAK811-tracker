@@ -43,7 +43,7 @@ static double Longitude = 0;
 static int32_t LatitudeBinary = 0;
 static int32_t LongitudeBinary = 0;
 
-static double Hdop = 0;
+static float Hdop = 0;
 
 static int16_t Altitude = 0xFFFF;
 
@@ -211,12 +211,12 @@ uint8_t GpsGetLatestGpsPositionBinary( int32_t *latiBin, int32_t *longiBin )
     return status;
 }
 
-int8_t GpsGetLatestGpsHorizontalDilution (void)
+float GpsGetLatestGpsHorizontalDilution (void)
 {
     BoardDisableIrq( );
     if( HasFix == true )
     {    
-        Hdop = atoi( NmeaGpsData.NmeaHorizontalDilution );
+        Hdop = atof( NmeaGpsData.NmeaHorizontalDilution );
     }
     else
     {
